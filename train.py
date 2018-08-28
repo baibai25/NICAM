@@ -1,8 +1,9 @@
-import glob, os
+import glob, os, gc
 import numpy as np
 import pandas as pd
 import keras
 from keras.preprocessing.image import array_to_img, img_to_array, list_pictures, load_img
+from sklearn.model_selection import train_test_split
 from keras.utils import np_utils
 
 # Preprocessing data
@@ -67,8 +68,10 @@ if __name__ == "__main__":
     del X
     del y
     gc.collect()
-    print(X.shape)
+    print(X_train.shape)
+    print(y_train.shape)
 
+"""
     # Learning
     model = build_model()
     model.compile(loss='binary_crossentropy', optimizer=Adamax(), metrics=['acc'])
@@ -77,3 +80,4 @@ if __name__ == "__main__":
     
     # export model
     model.save('my_model.h5')
+"""
