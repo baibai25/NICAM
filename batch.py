@@ -43,7 +43,7 @@ if __name__ == "__main__":
     # build network
     model = build_model()
     model.compile(loss='binary_crossentropy', optimizer=Adamax(), metrics=['acc'])
-    es_cb = EarlyStopping(monitor='binary_crossentropy', patience=2, verbose=1, mode='auto')
+    #es_cb = EarlyStopping(monitor='val_loss', patience=2, verbose=1, mode='auto')
     
     train_datagen = ImageDataGenerator(rescale=1./255)
     
@@ -62,10 +62,11 @@ if __name__ == "__main__":
     model.fit_generator(
         train_generator,
         steps_per_epoch = num_train_images // batch_size,
-        epochs=epochs,
+        epochs=epochs
         #validation_data=validation_generator,
-        #validation_steps=800
-        callbacks=[es_cb]
+        #validation_steps=800,
+        #validation_split=0.1,
+        #callbacks=[es_cb]
     )
 
     # export model
