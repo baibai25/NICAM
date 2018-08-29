@@ -2,14 +2,13 @@ import glob, os, gc
 import numpy as np
 import pandas as pd
 import keras
-from keras.preprocessing.image import img_to_array, load_img, ImageDataGenerator
-from keras.utils import np_utils
+from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Sequential, Model
 from keras.layers import Conv2D, Flatten, Dense, Dropout, Activation 
 from keras.layers.pooling import MaxPooling2D
 from keras.optimizers import Adamax
 from keras import backend as K
-from sklearn.model_selection import train_test_split
+from keras.callbacks import EarlyStopping, TensorBoard, ModelCheckpoint
 
 batch_size = 128
 epochs = 200
@@ -44,7 +43,8 @@ if __name__ == "__main__":
     # build network
     model = build_model()
     model.compile(loss='binary_crossentropy', optimizer=Adamax(), metrics=['acc'])
-
+    es_cb = EarlyStopping(monitor='binary_crossentropy', patience=2, verbose=1, mode='auto')
+    
     train_datagen = ImageDataGenerator(rescale=1./255)
     
     train_generator = train_datagen.flow_from_directory(
@@ -65,6 +65,7 @@ if __name__ == "__main__":
         epochs=epochs,
         #validation_data=validation_generator,
         #validation_steps=800
+        callbacks=[es_cb]
     )
 
     # export model
