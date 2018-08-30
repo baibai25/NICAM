@@ -36,18 +36,13 @@ def build_model():
     return model
 
 if __name__ == "__main__":
-    
-    tc = glob.glob('./data/train/TC/*.tif')
-    nontc = glob.glob('./data/train/nonTC/*.tif')
-    num_train_images = len(tc) + len(nontc)
-  
     # build network
     model = build_model()
     model.compile(loss='binary_crossentropy', optimizer=Adamax(), metrics=['acc'])
-    #es_cb = EarlyStopping(monitor='val_loss', patience=2, verbose=1, mode='auto')
+    es_cb = EarlyStopping(monitor='val_loss', patience=2, verbose=1, mode='auto')
     #model.summary()
 
-    train_datagen = ImageDataGenerator(rescale=1./255)
+    train_datagen = ImageDataGenerator(rescale=1./255, validation_split=0.2)
     
     train_generator = train_datagen.flow_from_directory(
         './data/train',
@@ -57,19 +52,32 @@ if __name__ == "__main__":
         shuffle=True,
         seed=None,
         classes=['nonTC', 'TC'],
-        class_mode="categorical"
+        class_mode='categorical',
+        subset='training'
     )
-    print(train_generator.class_indices)
 
+    validation_generator = train_datagen.flow_from_directory(
+        './data/train',
+        target_size=(64, 64),
+        color_mode='grayscale',
+        batch_size=batch_size,
+        shuffle=True,
+        seed=None,
+        classes=['nonTC', 'TC'],
+        class_mode='categorical',
+        subset='validation'
+    )
+    
+    print(train_generator.class_indices)
+    print(len(train_generator.filenames))
+    
     model.fit_generator(
         train_generator,
-        steps_per_epoch = num_train_images // batch_size,
+        #steps_per_epoch = num_train_images // batch_size,
         epochs=epochs,
-        class_weight=class_weight
-        #validation_data=validation_generator,
-        #validation_steps=800,
-        #validation_split=0.1,
-        #callbacks=[es_cb]
+        class_weight=class_weight,
+        validation_data=validation_generator,
+        callbacks=[es_cb]
     )
 
     # export model
