@@ -11,7 +11,8 @@ from keras import backend as K
 from keras.callbacks import EarlyStopping, TensorBoard, ModelCheckpoint
 
 batch_size = 128
-epochs = 200
+epochs = 20
+class_weight = {0: 1.0, 1: 50}
 
 # Activation Swish
 def swish(x):
@@ -62,7 +63,8 @@ if __name__ == "__main__":
     model.fit_generator(
         train_generator,
         steps_per_epoch = num_train_images // batch_size,
-        epochs=epochs
+        epochs=epochs,
+        class_weight=class_weight
         #validation_data=validation_generator,
         #validation_steps=800,
         #validation_split=0.1,
