@@ -30,7 +30,7 @@ def build_model():
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.25))
     model.add(Flatten())
-    model.add(Dense(512, activation=swish))
+    model.add(Dense(5000, activation=swish))
     model.add(Dropout(0.5))
     model.add(Dense(2, activation='softmax'))
     return model
@@ -45,7 +45,8 @@ if __name__ == "__main__":
     model = build_model()
     model.compile(loss='binary_crossentropy', optimizer=Adamax(), metrics=['acc'])
     #es_cb = EarlyStopping(monitor='val_loss', patience=2, verbose=1, mode='auto')
-    
+    #model.summary()
+
     train_datagen = ImageDataGenerator(rescale=1./255)
     
     train_generator = train_datagen.flow_from_directory(
