@@ -27,9 +27,8 @@ if __name__ == "__main__":
     )
 
     name = []
- 
-    for i in range(len(path)):
-        name.append(os.path.basename(path[i]))
+    for i in range(len(test_generator.filenames)):
+        name.append(os.path.basename(test_generator.filenames[i]))
 
     # Testing and export result
     model = load_model('my_model.h5', custom_objects={'swish':swish})
