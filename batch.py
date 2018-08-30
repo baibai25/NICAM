@@ -36,8 +36,8 @@ def build_model():
 
 if __name__ == "__main__":
     
-    tc = glob.glob('./train/TC/*.tif')
-    nontc = glob.glob('./train/nonTC/*.tif')
+    tc = glob.glob('./data/train/TC/*.tif')
+    nontc = glob.glob('./data/train/nonTC/*.tif')
     num_train_images = len(tc) + len(nontc)
   
     # build network
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     train_datagen = ImageDataGenerator(rescale=1./255)
     
     train_generator = train_datagen.flow_from_directory(
-        './train',
+        './data/train',
         target_size=(64, 64),
         color_mode='grayscale',
         batch_size=batch_size,
