@@ -29,8 +29,7 @@ if __name__ == "__main__":
         save_to_dir='./data/train/TC/fake',
         save_format='tif'
     )
-"""   
+
     # Generate fake images
     for i in range(30):
         data_generator.next()
-"""
