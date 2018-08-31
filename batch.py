@@ -12,7 +12,7 @@ from keras.callbacks import EarlyStopping, TensorBoard, ModelCheckpoint
 
 batch_size = 128
 epochs = 20
-class_weight = {0: 1.0, 1: 50}
+class_weight = {0: 1.0, 1: 20}
 
 # Activation Swish
 def swish(x):
@@ -30,7 +30,7 @@ def build_model():
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.25))
     model.add(Flatten())
-    model.add(Dense(5000, activation=swish))
+    model.add(Dense(10000, activation=swish))
     model.add(Dropout(0.5))
     model.add(Dense(2, activation='softmax'))
     return model
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     # build network
     model = build_model()
     model.compile(loss='binary_crossentropy', optimizer=Adamax(), metrics=['acc'])
-    es_cb = EarlyStopping(monitor='val_loss', patience=2, verbose=1, mode='auto')
+    es_cb = EarlyStopping(monitor='val_loss', patience=5, verbose=1, mode='auto')
     #model.summary()
 
     train_datagen = ImageDataGenerator(rescale=1./255, validation_split=0.2)
@@ -69,13 +69,13 @@ if __name__ == "__main__":
     )
     
     print(train_generator.class_indices)
-    print(len(train_generator.filenames))
-    
+    #print(len(train_generator.filenames))
+  
     model.fit_generator(
         train_generator,
         #steps_per_epoch = num_train_images // batch_size,
         epochs=epochs,
-        class_weight=class_weight,
+        #class_weight=class_weight,
         validation_data=validation_generator,
         callbacks=[es_cb]
     )
