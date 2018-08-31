@@ -2,22 +2,17 @@ import glob, os, gc
 import numpy as np
 import pandas as pd
 import keras
-from keras.preprocessing.image import img_to_array, load_img
-from keras.utils import np_utils
+from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Sequential, Model
 from keras.layers import Conv2D, Flatten, Dense, Dropout, Activation 
 from keras.layers.pooling import MaxPooling2D
 from keras.optimizers import Adamax
 from keras import backend as K
-from sklearn.model_selection import train_test_split
+from keras.callbacks import EarlyStopping, TensorBoard, ModelCheckpoint
 
-# Preprocessing data
-def pre_data(X, y):
-    # split and convert data
-    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
-    y_train = np_utils.to_categorical(y_train)
-    y_val = np_utils.to_categorical(y_val)
-    return X_train, X_val, y_train, y_val
+batch_size = 128
+epochs = 20
+class_weight = {0: 1.0, 1: 20}
 
 # Activation Swish
 def swish(x):
@@ -35,48 +30,55 @@ def build_model():
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.25))
     model.add(Flatten())
-    model.add(Dense(512, activation=swish))
+    model.add(Dense(10000, activation=swish))
     model.add(Dropout(0.5))
     model.add(Dense(2, activation='softmax'))
     return model
 
 if __name__ == "__main__":
-    # Load data
-    X = []
-    y = []
-    tc = glob.glob('./train/TC/*.tif')
-    nontc = glob.glob('./train/nonTC/*.tif')
-
-    print('Load dataset')
-    for picture in tc:
-        img = img_to_array(load_img(picture, grayscale=True, target_size=(64, 64)))
-        X.append(img)
-        y.append(1)
-
-    for picture in nontc:
-        img = img_to_array(load_img(picture, grayscale=True, target_size=(64, 64)))
-        X.append(img)
-        y.append(0)
-
-    print('Convert data')
-    X = np.asarray(X)
-    y = np.asarray(y)
-    X = X.astype('float32')
-    X /= 255.0
-
-    X_train, X_val, y_train, y_val = pre_data(X, y)
-    del X
-    del y
-    gc.collect()
-    print(X_train.shape)
-    print(y_train.shape)
-
-    # Learning
+    # build network
     model = build_model()
     model.compile(loss='binary_crossentropy', optimizer=Adamax(), metrics=['acc'])
-    model.fit(X_train, y_train, epochs=10, batch_size=64, 
-            validation_data=(X_val, y_val), verbose=1, shuffle=True)
-        
+    es_cb = EarlyStopping(monitor='val_loss', patience=5, verbose=1, mode='auto')
+    #model.summary()
+
+    train_datagen = ImageDataGenerator(rescale=1./255, validation_split=0.2)
+    
+    train_generator = train_datagen.flow_from_directory(
+        './data/train',
+        target_size=(64, 64),
+        color_mode='grayscale',
+        batch_size=batch_size,
+        shuffle=True,
+        seed=None,
+        classes=['nonTC', 'TC'],
+        class_mode='categorical',
+        subset='training'
+    )
+
+    validation_generator = train_datagen.flow_from_directory(
+        './data/train',
+        target_size=(64, 64),
+        color_mode='grayscale',
+        batch_size=batch_size,
+        shuffle=True,
+        seed=None,
+        classes=['nonTC', 'TC'],
+        class_mode='categorical',
+        subset='validation'
+    )
+    
+    print(train_generator.class_indices)
+    #print(len(train_generator.filenames))
+  
+    model.fit_generator(
+        train_generator,
+        #steps_per_epoch = num_train_images // batch_size,
+        epochs=epochs,
+        #class_weight=class_weight,
+        validation_data=validation_generator,
+        callbacks=[es_cb]
+    )
+
     # export model
     model.save('my_model.h5')
-
