@@ -11,7 +11,7 @@ from keras import backend as K
 from keras.callbacks import EarlyStopping, TensorBoard, ModelCheckpoint
 
 batch_size = 128
-epochs = 20
+epochs = 200
 class_weight = {0: 1.0, 1: 20}
 
 # Activation Swish
@@ -24,13 +24,19 @@ def build_model():
     model = Sequential()
     model.add(Conv2D(32, (3, 3), padding='same', data_format='channels_last', 
                      activation=swish, input_shape=(64, 64, 1)))
+    model.add(Conv2D(32, (3, 3), padding='same', activation=swish))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.25))
+
+    model.add(Conv2D(64, (3, 3), padding='same', activation=swish))
     model.add(Conv2D(64, (3, 3), padding='same', activation=swish))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.25))
+
     model.add(Flatten())
-    model.add(Dense(10000, activation=swish))
+    model.add(Dense(2048, activation=swish))
+    model.add(Dropout(0.5))
+    model.add(Dense(2048, activation=swish))
     model.add(Dropout(0.5))
     model.add(Dense(2, activation='softmax'))
     return model
@@ -39,7 +45,7 @@ if __name__ == "__main__":
     # build network
     model = build_model()
     model.compile(loss='binary_crossentropy', optimizer=Adamax(), metrics=['acc'])
-    es_cb = EarlyStopping(monitor='val_loss', patience=5, verbose=1, mode='auto')
+    es_cb = EarlyStopping(monitor='val_loss', patience=2, verbose=1, mode='auto')
     #model.summary()
 
     train_datagen = ImageDataGenerator(rescale=1./255, validation_split=0.2)
@@ -82,3 +88,4 @@ if __name__ == "__main__":
 
     # export model
     model.save('my_model.h5')
+
