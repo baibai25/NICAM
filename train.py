@@ -46,6 +46,7 @@ if __name__ == "__main__":
     model = build_model()
     model.compile(loss='binary_crossentropy', optimizer=Adamax(), metrics=['acc'])
     es_cb = EarlyStopping(monitor='val_loss', patience=2, verbose=1, mode='auto')
+    tb_cb = TensorBoard(log_dir='./logs', histogram_freq=1, write_graph=True, write_images=True)
     #model.summary()
 
     train_datagen = ImageDataGenerator(rescale=1./255, validation_split=0.2)
@@ -83,7 +84,7 @@ if __name__ == "__main__":
         epochs=epochs,
         #class_weight=class_weight,
         validation_data=validation_generator,
-        callbacks=[es_cb]
+        callbacks=[es_cb, tb_cb]
     )
 
     # export model
