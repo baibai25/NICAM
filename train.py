@@ -6,12 +6,12 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Sequential, Model
 from keras.layers import Conv2D, Flatten, Dense, Dropout, Activation 
 from keras.layers.pooling import MaxPooling2D
-from keras.optimizers import Adamax
+from keras.optimizers import Adamax, Adam, Adadelta
 from keras import backend as K
 from keras.callbacks import EarlyStopping, TensorBoard, ModelCheckpoint
 
 batch_size = 128
-epochs = 200
+epochs = 50
 class_weight = {0: 1.0, 1: 20}
 
 # Activation Swish
@@ -36,17 +36,15 @@ def build_model():
     model.add(Flatten())
     model.add(Dense(2048, activation=swish))
     model.add(Dropout(0.5))
-    model.add(Dense(2048, activation=swish))
-    model.add(Dropout(0.5))
-    model.add(Dense(2, activation='softmax'))
+    model.add(Dense(2, activation='sigmoid'))
     return model
 
 if __name__ == "__main__":
     # build network
     model = build_model()
-    model.compile(loss='binary_crossentropy', optimizer=Adamax(), metrics=['acc'])
+    model.compile(loss='binary_crossentropy', optimizer=Adam(), metrics=['acc'])
     es_cb = EarlyStopping(monitor='val_loss', patience=2, verbose=1, mode='auto')
-    tb_cb = TensorBoard(log_dir='./logs', histogram_freq=1, write_graph=True, write_images=True)
+    tb_cb = TensorBoard(log_dir='./logs')
     #model.summary()
 
     train_datagen = ImageDataGenerator(rescale=1./255, validation_split=0.2)
