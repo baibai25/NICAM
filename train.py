@@ -57,7 +57,7 @@ if __name__ == "__main__":
         shuffle=True,
         seed=None,
         classes=['nonTC', 'TC'],
-        class_mode='categorical',
+        class_mode='binary',
         subset='training'
     )
 
@@ -69,7 +69,7 @@ if __name__ == "__main__":
         shuffle=True,
         seed=None,
         classes=['nonTC', 'TC'],
-        class_mode='categorical',
+        class_mode='binary',
         subset='validation'
     )
     
