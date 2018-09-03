@@ -36,7 +36,7 @@ def build_model():
     model.add(Flatten())
     model.add(Dense(2048, activation=swish))
     model.add(Dropout(0.5))
-    model.add(Dense(2, activation='sigmoid'))
+    model.add(Dense(1, activation='sigmoid'))
     return model
 
 if __name__ == "__main__":
