@@ -4,14 +4,14 @@ import pandas as pd
 import keras
 from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Sequential, Model
-from keras.layers import Conv2D, Flatten, Dense, Dropout, Activation 
+from keras.layers import Conv2D, Flatten, Dense, Dropout, Activation, BatchNormalization 
 from keras.layers.pooling import MaxPooling2D
 from keras.optimizers import Adamax, Adam, Adadelta
 from keras import backend as K
 from keras.callbacks import EarlyStopping, TensorBoard, ModelCheckpoint
 
 batch_size = 128
-epochs = 50
+epochs = 200
 class_weight = {0: 1.0, 1: 20}
 
 # Activation Swish
@@ -22,31 +22,48 @@ def swish(x):
 def build_model():
     # frames.shape = (frames width, hight, channels)
     model = Sequential()
-    model.add(Conv2D(32, (3, 3), padding='same', data_format='channels_last', 
-                     activation=swish, input_shape=(64, 64, 1)))
-    model.add(Conv2D(32, (3, 3), padding='same', activation=swish))
+    model.add(Conv2D(32, (3, 3), padding='same',
+         data_format='channels_last', input_shape=(64, 64, 1)))
+    model.add(BatchNormalization())
+    model.add(Activation(swish))
+    model.add(Conv2D(32, (3, 3)))
+    model.add(BatchNormalization())
+    model.add(Activation(swish))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.25))
 
-    model.add(Conv2D(64, (3, 3), padding='same', activation=swish))
-    model.add(Conv2D(64, (3, 3), padding='same', activation=swish))
+    model.add(Conv2D(64, (3, 3), padding='same'))
+    model.add(BatchNormalization())
+    model.add(Activation(swish))
+    model.add(Conv2D(64, (3, 3)))
+    model.add(BatchNormalization())
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.25))
+
+    model.add(Conv2D(128, (3, 3), padding='same'))
+    model.add(BatchNormalization())
+    model.add(Activation(swish))
+    model.add(Conv2D(128, (3, 3)))
+    model.add(BatchNormalization())
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
+
 
     model.add(Flatten())
-    model.add(Dense(2048, activation=swish))
+    model.add(Dense(512, activation=swish))
     model.add(Dropout(0.5))
     model.add(Dense(1, activation='sigmoid'))
+    
     return model
 
 if __name__ == "__main__":
     # build network
     model = build_model()
-    model.compile(loss='binary_crossentropy', optimizer=Adam(), metrics=['acc'])
-    es_cb = EarlyStopping(monitor='val_loss', patience=2, verbose=1, mode='auto')
+    model.compile(loss='binary_crossentropy', optimizer=Adamax(), metrics=['acc'])
+    es_cb = EarlyStopping(monitor='val_loss', patience=0, verbose=1, mode='auto')
     tb_cb = TensorBoard(log_dir='./logs')
-    #model.summary()
-
+    model.summary()
+ 
     train_datagen = ImageDataGenerator(rescale=1./255, validation_split=0.2)
     
     train_generator = train_datagen.flow_from_directory(
@@ -82,7 +99,7 @@ if __name__ == "__main__":
         epochs=epochs,
         #class_weight=class_weight,
         validation_data=validation_generator,
-        callbacks=[es_cb, tb_cb]
+        callbacks=[tb_cb]
     )
 
     # export model
