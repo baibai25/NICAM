@@ -33,6 +33,7 @@ if __name__ == "__main__":
     # Testing and export result
     model = load_model('my_model.h5', custom_objects={'swish':swish})
     pred = model.predict_generator(test_generator, len(test_generator.filenames), verbose=1)
-    predict_class_indices = np.argmax(pred, axis = 1)
-    #print(predict_class_indices)
-    pd.DataFrame({'ID':name, 'pred':predict_class_indices}).to_csv("submit.tsv", sep='\t', index=False, header=False)
+    pred_labels = (pred>0.5).astype(np.int)
+    #print(pred)
+    #print(labels)
+    pd.DataFrame({'ID':name, 'pred':pred_labels}).to_csv("submit.tsv", sep='\t', index=False, header=False)
