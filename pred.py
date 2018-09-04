@@ -36,4 +36,4 @@ if __name__ == "__main__":
     pred_labels = (pred>0.5).astype(np.int)
     #print(pred)
     #print(labels)
-    pd.DataFrame({'ID':name, 'pred':pred_labels}).to_csv("submit.tsv", sep='\t', index=False, header=False)
+    pd.DataFrame({'ID':name, 'pred':pred_labels.flatten()}).to_csv("submit.tsv", sep='\t', index=False, header=False)
