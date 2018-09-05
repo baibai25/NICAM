@@ -2,7 +2,7 @@ import glob
 import keras
 from keras.preprocessing.image import ImageDataGenerator
 
-batch_size = 401
+num_fakeimg = 2100665
 
 if __name__ == "__main__":
     # Number of positive data: 71,779 
@@ -25,13 +25,16 @@ if __name__ == "__main__":
         './data/train/TC',
         target_size=(64, 64),
         color_mode='grayscale',
-        batch_size=batch_size,
+        batch_size=1,
         class_mode=None,
         save_to_dir='./data/train/TC/fake',
         save_format='tif'
     )
 
     # Generate fake images
-    # (num_positive / batch_size) * (neg // pos)
-    for i in range(5370):
-        data_generator.next()
+    i=0
+    for d in data_generator:
+        i+=1
+        if (i == num_fakeimg):
+            break
+
