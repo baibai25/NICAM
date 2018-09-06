@@ -11,7 +11,7 @@ from keras import backend as K
 from keras.callbacks import EarlyStopping, TensorBoard, ModelCheckpoint
 
 batch_size = 128
-epochs = 200
+epochs = 10
 class_weight = {0: 1.0, 1: 20}
 
 # Activation Swish
@@ -82,9 +82,10 @@ def build_model():
 if __name__ == "__main__":
     # build network
     model = build_model()
-    model.compile(loss='binary_crossentropy', optimizer=Adamax(), metrics=['acc'])
+    model.compile(loss='binary_crossentropy', optimizer=Adam(), metrics=['acc'])
     es_cb = EarlyStopping(monitor='val_loss', patience=0, verbose=1, mode='auto')
     tb_cb = TensorBoard(log_dir='./logs')
+    cp_cb = ModelCheckpoint(filepath='./tmp/weights.hdf5', verbose=1, save_best_only=True)
     model.summary()
  
     train_datagen = ImageDataGenerator(rescale=1./255, validation_split=0.2)
@@ -122,7 +123,7 @@ if __name__ == "__main__":
         epochs=epochs,
         #class_weight=class_weight,
         validation_data=validation_generator,
-        callbacks=[tb_cb]
+        callbacks=[tb_cb, cp_cb]
     )
 
     # export model
