@@ -6,13 +6,13 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Sequential, Model
 from keras.layers import Conv2D, Flatten, Dense, Dropout, Activation, BatchNormalization 
 from keras.layers.pooling import MaxPooling2D
-from keras.optimizers import Adamax, Adam, Adadelta
+from keras.optimizers import Adamax, Adam, SGD
 from keras import backend as K
 from keras.callbacks import EarlyStopping, TensorBoard, ModelCheckpoint
 
 batch_size = 128
-epochs = 10
-class_weight = {0: 1.0, 1: 20}
+epochs = 20
+class_weight = {0:1.0, 1: 3.0}
 
 # Activation Swish
 def swish(x):
@@ -82,10 +82,12 @@ def build_model():
 if __name__ == "__main__":
     # build network
     model = build_model()
-    model.compile(loss='binary_crossentropy', optimizer=Adam(), metrics=['acc'])
+    model.compile(loss='binary_crossentropy',
+            optimizer=SGD(momentum=1e-4, decay=0.9, nesterov=True), metrics=['acc'])
     es_cb = EarlyStopping(monitor='val_loss', patience=0, verbose=1, mode='auto')
     tb_cb = TensorBoard(log_dir='./logs')
-    cp_cb = ModelCheckpoint(filepath='./tmp/weights.hdf5', verbose=1, save_best_only=True)
+    cp_path = 'weights-improvement-{epoch:02d}-{val_acc:.2f}.hdf5' 
+    cp_cb = ModelCheckpoint(filepath=cp_path, verbose=1)
     model.summary()
  
     train_datagen = ImageDataGenerator(rescale=1./255, validation_split=0.2)
@@ -119,9 +121,8 @@ if __name__ == "__main__":
   
     model.fit_generator(
         train_generator,
-        #steps_per_epoch = num_train_images // batch_size,
         epochs=epochs,
-        #class_weight=class_weight,
+        class_weight=class_weight,
         validation_data=validation_generator,
         callbacks=[tb_cb, cp_cb]
     )
