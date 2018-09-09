@@ -93,7 +93,7 @@ def discriminator_model():
 # Save generated images
 def save_generated_images(generated_images, epoch, batch_number):
     
-    new_dir = './output/epoch-{}'.format(epoch)
+    new_dir = './output/epoch-{}'.format(epoch + 1)
     os.mkdir(new_dir)
 
     for i in range(64):
@@ -101,7 +101,8 @@ def save_generated_images(generated_images, epoch, batch_number):
         image += 1
         image *= 127.5
         image.astype(np.uint8)
-        name = './output/epoch-{}/{}.tif'.format(str(epoch), str(i))
+        # png or tif
+        name = './output/epoch-{}/{}.png'.format(str(epoch), str(i))
         cv2.imwrite(name, image)
 
 def train(dataset_path, batch_size, epochs):
@@ -191,7 +192,7 @@ def train(dataset_path, batch_size, epochs):
 def main():
     dataset_path = './data'
     batch_size = 64
-    epochs = 10
+    epochs = 20
     train(dataset_path, batch_size, epochs)
 
 
