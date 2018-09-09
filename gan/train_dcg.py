@@ -1,3 +1,5 @@
+from PIL import Image
+import cv2
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -10,7 +12,7 @@ from keras.layers.advanced_activations import LeakyReLU
 from keras.optimizers import Adam
 np.random.seed(42)
 
-def load_dataset(dataset_path):
+def load_dataset(dataset_path, batch_size):
     
     gen = ImageDataGenerator()
     
@@ -88,31 +90,20 @@ def discriminator_model():
 
     return discriminator
 
-# Displays a figure of the generated images and saves them in as .png image
+# Save generated images
 def save_generated_images(generated_images, epoch, batch_number):
-    plt.figure(figsize=(8, 8), num=2)
-    gs1 = gridspec.GridSpec(8, 8)
-    gs1.update(wspace=0, hspace=0)
+    
+    new_dir = './output/epoch-{}'.format(epoch)
+    os.mkdir(new_dir)
 
     for i in range(64):
-        ax1 = plt.subplot(gs1[i])
-        ax1.set_aspect('equal')
         image = generated_images[i, :, :, :]
         image += 1
         image *= 127.5
-        fig = plt.imshow(image.astype(np.uint8))
-        plt.axis('off')
-        fig.axes.get_xaxis().set_visible(False)
-        fig.axes.get_yaxis().set_visible(False)
-
-    plt.tight_layout()
-    save_name = 'generated images/generatedSamples_epoch' + str(
-        epoch + 1) + '_batch' + str(batch_number + 1) + '.png'
-
-    plt.savefig(save_name, bbox_inches='tight', pad_inches=0)
-    plt.pause(0.0000000001)
-    plt.show()
-
+        image.astype(np.uint8)
+        #image = np.squeeze(image)
+        name = './output/epoch-{}/{}.tif'.format(str(epoch), str(i))
+        cv2.imwrite(name, image)
 
 def train(dataset_path, batch_size, epochs):
     # Build network
@@ -129,17 +120,18 @@ def train(dataset_path, batch_size, epochs):
     #discriminator.summary()
     #generator.summary()
     #gan.summary()
- 
+
     # Load dataset
-    dataset_generator = load_dataset(dataset_path)
-    number_of_batches = int(71779 / batch_size)
+    dataset_generator = load_dataset(dataset_path, batch_size)
+    sample_size = int(len(dataset_generator.filenames))
+    number_of_batches = int(len(dataset_generator.filenames) / batch_size)
+    #71779
 
     # plot variables
     adversarial_loss = np.empty(shape=1)
     discriminator_loss = np.empty(shape=1)
     batches = np.empty(shape=1)
 
-    plt.ion()
     current_batch = 0
 
     # Train
@@ -182,24 +174,27 @@ def train(dataset_path, batch_size, epochs):
             adversarial_loss = np.append(adversarial_loss, g_loss)
             batches = np.append(batches, current_batch)
 
-
+            print('Step: {}'.format(batch_number))
+            #(64x64x64x1) 
+       
             # Each 50 batches show and save images
-            if((batch_number + 1) % 50 == 0 and current_batch_size == batch_size):
-                save_generated_images(generated_images, epoch, batch_number)
-            
+            #if((batch_number + 1) % 50 == 0 and current_batch_size == batch_size):
+                #save_generated_images(generated_images, epoch, batch_number)
+
             current_batch += 1
-        
-        # Save the model weights each 5 epochs
+       
+        save_generated_images(generated_images, epoch, batch_number)
+  
+        # Save the model weights each 5 epochs 
         if (epoch + 1) % 5 == 0:
             discriminator.trainable = True
-            generator.save('models/generator_epoch' + str(epoch) + '.hdf5')
-            discriminator.save('models/discriminator_epoch' + str(epoch) + '.hdf5')
-
+            generator.save('./models/generator_epoch' + str(epoch) + '.hdf5')
+            discriminator.save('./models/discriminator_epoch' + str(epoch) + '.hdf5')
 
 def main():
-    dataset_path = ''
+    dataset_path = './data'
     batch_size = 64
-    epochs = 190
+    epochs = 10
     train(dataset_path, batch_size, epochs)
 
 
