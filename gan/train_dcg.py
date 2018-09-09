@@ -101,7 +101,6 @@ def save_generated_images(generated_images, epoch, batch_number):
         image += 1
         image *= 127.5
         image.astype(np.uint8)
-        #image = np.squeeze(image)
         name = './output/epoch-{}/{}.tif'.format(str(epoch), str(i))
         cv2.imwrite(name, image)
 
@@ -111,10 +110,10 @@ def train(dataset_path, batch_size, epochs):
     discriminator = discriminator_model()
     discriminator.trainable = False
     
+    # Combined model
     gan = Sequential()
     gan.add(generator)
     gan.add(discriminator)
-
     optimizer = Adam(lr=0.00015, beta_1=0.5)
     gan.compile(loss='binary_crossentropy', optimizer=optimizer, metrics=None)
     #discriminator.summary()
@@ -125,16 +124,15 @@ def train(dataset_path, batch_size, epochs):
     dataset_generator = load_dataset(dataset_path, batch_size)
     sample_size = int(len(dataset_generator.filenames))
     number_of_batches = int(len(dataset_generator.filenames) / batch_size)
-    #71779
 
-    # plot variables
+    # variables for ploting
     adversarial_loss = np.empty(shape=1)
     discriminator_loss = np.empty(shape=1)
     batches = np.empty(shape=1)
 
-    current_batch = 0
 
     # Train
+    current_batch = 0
     for epoch in range(epochs):
         print("Epoch " + str(epoch+1) + "/" + str(epochs) + " :")
 
@@ -152,7 +150,7 @@ def train(dataset_path, batch_size, epochs):
             noise = np.random.normal(0, 1, size=(current_batch_size, ) + (1, 1, 100))
             generated_images = generator.predict(noise)
 
-            # Add noise to the labels
+            # Important: Add noise to the labels
             real_y = (np.ones(current_batch_size) - np.random.random_sample(current_batch_size) * 0.2)
             fake_y = np.random.random_sample(current_batch_size) * 0.2
 
@@ -174,23 +172,22 @@ def train(dataset_path, batch_size, epochs):
             adversarial_loss = np.append(adversarial_loss, g_loss)
             batches = np.append(batches, current_batch)
 
-            print('Step: {}'.format(batch_number))
-            #(64x64x64x1) 
-       
             # Each 50 batches show and save images
             #if((batch_number + 1) % 50 == 0 and current_batch_size == batch_size):
                 #save_generated_images(generated_images, epoch, batch_number)
 
             current_batch += 1
-       
-        save_generated_images(generated_images, epoch, batch_number)
-  
-        # Save the model weights each 5 epochs 
+            print('Step: {}'.format(batch_number))
+ 
+        # Save the model weights and generated images each 5 epochs 
         if (epoch + 1) % 5 == 0:
             discriminator.trainable = True
             generator.save('./models/generator_epoch' + str(epoch) + '.hdf5')
             discriminator.save('./models/discriminator_epoch' + str(epoch) + '.hdf5')
-
+            
+            # Output shape (64, 64, 64, 1) 
+            save_generated_images(generated_images, epoch, batch_number)
+  
 def main():
     dataset_path = './data'
     batch_size = 64
