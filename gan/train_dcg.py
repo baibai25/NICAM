@@ -1,9 +1,7 @@
-from PIL import Image
 import cv2
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 import keras
 from keras.models import Sequential
 from keras.preprocessing.image import ImageDataGenerator
@@ -12,10 +10,11 @@ from keras.layers.advanced_activations import LeakyReLU
 from keras.optimizers import Adam
 np.random.seed(42)
 
+# Load dataset
 def load_dataset(dataset_path, batch_size):
-    
+
     gen = ImageDataGenerator()
-    
+
     data_generator = gen.flow_from_directory(
         dataset_path,
         target_size=(64, 64),
@@ -28,7 +27,7 @@ def load_dataset(dataset_path, batch_size):
 
     return data_generator
 
-# define model
+# Ddefine generative model
 def generator_model():
     #kernel_init = RandomNormal(mean=0.0, stddev=0.01)
     kernel_init = 'glorot_uniform'
@@ -60,6 +59,7 @@ def generator_model():
 
     return generator
 
+# Define discriminative model
 def discriminator_model():
     #kernel_init = RandomNormal(mean=0.0, stddev=0.01)
     kernel_init = 'glorot_uniform'   
@@ -105,6 +105,7 @@ def save_generated_images(generated_images, epoch, batch_number):
         name = './output/epoch-{}/{}.png'.format(str(epoch), str(i))
         cv2.imwrite(name, image)
 
+# Training
 def train(dataset_path, batch_size, epochs):
     # Build network
     generator = generator_model()
