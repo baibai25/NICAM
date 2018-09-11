@@ -10,9 +10,10 @@ from keras.optimizers import Adamax, Adam, SGD
 from keras import backend as K
 from keras.callbacks import EarlyStopping, TensorBoard, ModelCheckpoint
 
-batch_size = 128
+batch_size = 512
 epochs = 20
 class_weight = {0:1.0, 1: 3.0}
+model_path = './tmp/weights-improvement-20-0.95.hdf5'
 
 # Activation Swish
 def swish(x):
@@ -82,11 +83,14 @@ def build_model():
 if __name__ == "__main__":
     # build network
     model = build_model()
+
+    #model.load_weights(model_path)
+    
     model.compile(loss='binary_crossentropy',
-            optimizer=SGD(momentum=1e-4, decay=0.9, nesterov=True), metrics=['acc'])
+            optimizer=Adam(), metrics=['acc'])
     es_cb = EarlyStopping(monitor='val_loss', patience=0, verbose=1, mode='auto')
     tb_cb = TensorBoard(log_dir='./logs')
-    cp_path = 'weights-improvement-{epoch:02d}-{val_acc:.2f}.hdf5' 
+    cp_path = './tmp/{epoch:02d}-{val_loss:.2f}.hdf5' 
     cp_cb = ModelCheckpoint(filepath=cp_path, verbose=1)
     model.summary()
  
@@ -98,7 +102,7 @@ if __name__ == "__main__":
         color_mode='grayscale',
         batch_size=batch_size,
         shuffle=True,
-        seed=None,
+        seed=42,
         classes=['nonTC', 'TC'],
         class_mode='binary',
         subset='training'
@@ -110,7 +114,7 @@ if __name__ == "__main__":
         color_mode='grayscale',
         batch_size=batch_size,
         shuffle=True,
-        seed=None,
+        seed=42,
         classes=['nonTC', 'TC'],
         class_mode='binary',
         subset='validation'
