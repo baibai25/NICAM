@@ -94,7 +94,8 @@ def discriminator_model():
 def save_generated_images(generated_images, epoch, batch_number):
     
     new_dir = './output/epoch-{}'.format(epoch + 1)
-    os.mkdir(new_dir)
+    if not os.path.exists(new_dir):
+        os.mkdir(new_dir)
 
     for i in range(64):
         image = generated_images[i, :, :, :]
