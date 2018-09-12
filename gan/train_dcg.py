@@ -158,7 +158,7 @@ def train(dataset_path, batch_size, epochs):
             batches = np.append(batches, current_batch)
 
             current_batch += 1
-            print('Epoch: {}, Step: {}'.format(epoch+1, batch_number))
+            print('Epoch: {}, Step: {}/{}'.format(epoch+1, batch_number, number_of_batches))
  
         # Save the model weights and generated images each 10 epochs 
         if (epoch + 1) % 10 == 0:
@@ -170,7 +170,7 @@ def train(dataset_path, batch_size, epochs):
 def main():
     dataset_path = './data'
     batch_size = 64
-    epochs = 400
+    epochs = 200
     train(dataset_path, batch_size, epochs)
 
 
