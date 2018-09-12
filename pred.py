@@ -7,6 +7,7 @@ from keras.models import load_model
 from keras import backend as K
 
 batch_size = 1
+model_path = 'my_model.h5'  #my_model.h5
 
 # Activation Swish
 def swish(x):
@@ -19,7 +20,7 @@ if __name__ == "__main__":
     test_generator = test_datagen.flow_from_directory(
         './data/test',
         target_size=(64, 64),
-        color_mode='grayscale',
+        #color_mode='grayscale',
         batch_size=batch_size,
         shuffle=False,
         seed=None,
@@ -31,7 +32,7 @@ if __name__ == "__main__":
         name.append(os.path.basename(test_generator.filenames[i]))
 
     # Testing and export result
-    model = load_model('my_model.h5', custom_objects={'swish':swish})
+    model = load_model(model_path, custom_objects={'swish':swish})
     pred = model.predict_generator(test_generator, len(test_generator.filenames), verbose=1)
     pred_labels = (pred>0.5).astype(np.int)
     #print(pred)
