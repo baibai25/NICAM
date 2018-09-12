@@ -11,7 +11,6 @@ if __name__ == "__main__":
     
     # Data augmentation
     gen = ImageDataGenerator(
-        rescale=1./255,
         rotation_range=90,
         zoom_range=0.2,
         shear_range=0.2,
@@ -24,10 +23,10 @@ if __name__ == "__main__":
     data_generator = gen.flow_from_directory(
         './data/train/TC',
         target_size=(64, 64),
-        color_mode='grayscale',
         batch_size=1,
         class_mode=None,
         save_to_dir='./data/train/TC/fake',
+        # required png or jpeg
         save_format='tif'
     )
 
