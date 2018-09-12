@@ -1,4 +1,3 @@
-import cv2
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -90,21 +89,6 @@ def discriminator_model():
 
     return discriminator
 
-# Save generated images
-def save_generated_images(generated_images, epoch, batch_number):
-    
-    new_dir = './output/epoch-{}'.format(epoch + 1)
-    if not os.path.exists(new_dir):
-        os.mkdir(new_dir)
-
-    for i in range(64):
-        image = generated_images[i, :, :, :]
-        image += 1
-        image *= 127.5
-        image.astype(np.uint8)
-        # png or tif
-        name = './output/epoch-{}/{}.png'.format(str(epoch), str(i))
-        cv2.imwrite(name, image)
 
 # Training
 def train(dataset_path, batch_size, epochs):
@@ -125,7 +109,6 @@ def train(dataset_path, batch_size, epochs):
 
     # Load dataset
     dataset_generator = load_dataset(dataset_path, batch_size)
-    sample_size = int(len(dataset_generator.filenames))
     number_of_batches = int(len(dataset_generator.filenames) / batch_size)
 
     # variables for ploting
@@ -175,26 +158,21 @@ def train(dataset_path, batch_size, epochs):
             adversarial_loss = np.append(adversarial_loss, g_loss)
             batches = np.append(batches, current_batch)
 
-            # Each 50 batches show and save images
-            #if((batch_number + 1) % 50 == 0 and current_batch_size == batch_size):
-                #save_generated_images(generated_images, epoch, batch_number)
-
             current_batch += 1
-            print('Step: {}'.format(batch_number))
+            print('Epoch: {}, Step: {}'.format(epoch+1, batch_number))
  
         # Save the model weights and generated images each 5 epochs 
         if (epoch + 1) % 5 == 0:
             discriminator.trainable = True
             generator.save('./models/generator_epoch' + str(epoch) + '.hdf5')
-            discriminator.save('./models/discriminator_epoch' + str(epoch) + '.hdf5')
+            discriminator.save('./models/discriminator_epoch' + str(epoch + 1) + '.hdf5')
             
-            # Output shape (64, 64, 64, 1) 
-            save_generated_images(generated_images, epoch, batch_number)
+
   
 def main():
     dataset_path = './data'
     batch_size = 64
-    epochs = 20
+    epochs = 200
     train(dataset_path, batch_size, epochs)
 
 
