@@ -17,7 +17,7 @@ def load_dataset(dataset_path, batch_size):
     data_generator = gen.flow_from_directory(
         dataset_path,
         target_size=(64, 64),
-        color_mode='grayscale',
+        #color_mode='grayscale',
         batch_size=batch_size,
         shuffle=False,
         seed=None,
@@ -33,23 +33,23 @@ def generator_model():
     
     generator = Sequential()
     generator.add(Dense(4*4*512, input_shape=(1, 1, 100), kernel_initializer=kernel_init))
-    generator.add(BatchNormalization())
+    generator.add(BatchNormalization(momentum=0.5))
     generator.add(LeakyReLU(0.2))
     generator.add(Reshape((4, 4, 512)))
 
     generator.add(Conv2DTranspose(256, kernel_size=(4, 4), strides=(2, 2), padding='same', kernel_initializer=kernel_init))
-    generator.add(BatchNormalization())
+    generator.add(BatchNormalization(momentum=0.5))
     generator.add(LeakyReLU(0.2))
     
     generator.add(Conv2DTranspose(128, kernel_size=(4, 4), strides=(2, 2), padding='same', kernel_initializer=kernel_init))
-    generator.add(BatchNormalization())
+    generator.add(BatchNormalization(momentum=0.5))
     generator.add(LeakyReLU(0.2))
     
     generator.add(Conv2DTranspose(64, kernel_size=(4, 4), strides=(2, 2), padding='same', kernel_initializer=kernel_init))
-    generator.add(BatchNormalization())
+    generator.add(BatchNormalization(momentum=0.5))
     generator.add(LeakyReLU(0.2))
-    
-    generator.add(Conv2DTranspose(1, kernel_size=(4, 4), strides=(2, 2), padding='same', kernel_initializer=kernel_init))
+   
+    generator.add(Conv2DTranspose(3, kernel_size=(4, 4), strides=(2, 2), padding='same', kernel_initializer=kernel_init))
     generator.add(Conv2D(1, kernel_size=(4, 4), padding='same', strides=(1, 1)))
     generator.add(Activation('tanh'))
 
@@ -65,19 +65,19 @@ def discriminator_model():
     
     discriminator = Sequential()
     discriminator.add(Conv2D(64, kernel_size=(4, 4), padding='same', strides = (2,2),
-        input_shape=(64, 64, 1), kernel_initializer=kernel_init))
+        input_shape=(64, 64, 3), kernel_initializer=kernel_init))
     discriminator.add(LeakyReLU(0.2))
     
     discriminator.add(Conv2D(128, kernel_size=(4, 4), padding='same', strides=(2,2), kernel_initializer=kernel_init))
-    discriminator.add(BatchNormalization())
+    discriminator.add(BatchNormalization(momentum=0.5))
     discriminator.add(LeakyReLU(0.2))
     
     discriminator.add(Conv2D(256, kernel_size=(4, 4), padding='same', strides=(2,2), kernel_initializer=kernel_init))
-    discriminator.add(BatchNormalization())
+    discriminator.add(BatchNormalization(momentum=0.5))
     discriminator.add(LeakyReLU(0.2))
 
     discriminator.add(Conv2D(512, kernel_size=(4, 4), padding='same', strides=(2,2), kernel_initializer=kernel_init))
-    discriminator.add(BatchNormalization())
+    discriminator.add(BatchNormalization(momentum=0.5))
     discriminator.add(LeakyReLU(0.2))
 
     discriminator.add(Flatten())
@@ -161,8 +161,8 @@ def train(dataset_path, batch_size, epochs):
             current_batch += 1
             print('Epoch: {}, Step: {}'.format(epoch+1, batch_number))
  
-        # Save the model weights and generated images each 5 epochs 
-        if (epoch + 1) % 5 == 0:
+        # Save the model weights and generated images each 10 epochs 
+        if (epoch + 1) % 10 == 0:
             discriminator.trainable = True
             generator.save('./models/generator_epoch' + str(epoch) + '.hdf5')
             discriminator.save('./models/discriminator_epoch' + str(epoch + 1) + '.hdf5')
@@ -172,7 +172,7 @@ def train(dataset_path, batch_size, epochs):
 def main():
     dataset_path = './data'
     batch_size = 64
-    epochs = 200
+    epochs = 400
     train(dataset_path, batch_size, epochs)
 
 
