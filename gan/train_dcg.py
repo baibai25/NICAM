@@ -50,7 +50,6 @@ def generator_model():
     generator.add(LeakyReLU(0.2))
    
     generator.add(Conv2DTranspose(3, kernel_size=(4, 4), strides=(2, 2), padding='same', kernel_initializer=kernel_init))
-    generator.add(Conv2D(1, kernel_size=(4, 4), padding='same', strides=(1, 1)))
     generator.add(Activation('tanh'))
 
     optimizer = Adam(lr=0.00015, beta_1=0.5)
@@ -96,7 +95,7 @@ def train(dataset_path, batch_size, epochs):
     generator = generator_model()
     discriminator = discriminator_model()
     discriminator.trainable = False
-    
+ 
     # Combined model
     gan = Sequential()
     gan.add(generator)
@@ -165,8 +164,7 @@ def train(dataset_path, batch_size, epochs):
         if (epoch + 1) % 10 == 0:
             discriminator.trainable = True
             generator.save('./models/generator_epoch' + str(epoch) + '.hdf5')
-            discriminator.save('./models/discriminator_epoch' + str(epoch + 1) + '.hdf5')
-            
+            discriminator.save('./models/discriminator_epoch' + str(epoch + 1) + '.hdf5')      
 
   
 def main():
