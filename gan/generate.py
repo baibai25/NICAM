@@ -1,11 +1,11 @@
-import cv2
-import os
+import os, sys
+import tifffile
 import numpy as np
 import keras
 from keras.models import load_model
 np.random.seed(42)
 
-# Save generated images
+# Save generated images as 32bit grayscale tiff
 def save_generated_images(generated_images):
 
     for i in range(len(generated_images)):
@@ -14,7 +14,7 @@ def save_generated_images(generated_images):
         image *= 127.5
         image.astype(np.uint8)
         name = './generated/{}.tif'.format(str(i))
-        cv2.imwrite(name, image)
+        tifffile.imsave(name, image)
 
 
 # Training
@@ -31,10 +31,11 @@ def test(model_path, generate_size):
 
   
 def main():
-    model_path = './models/generator_epoch199.hdf5'
+    model_path = './models/generator_epoch99.hdf5'
     generate_size = 128
     test(model_path, generate_size)
 
 
 if __name__ == "__main__":
+    args = sys.args
     main()

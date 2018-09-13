@@ -17,7 +17,7 @@ def load_dataset(dataset_path, batch_size):
     data_generator = gen.flow_from_directory(
         dataset_path,
         target_size=(64, 64),
-        #color_mode='grayscale',
+        color_mode='grayscale',
         batch_size=batch_size,
         shuffle=False,
         seed=None,
@@ -26,56 +26,25 @@ def load_dataset(dataset_path, batch_size):
 
     return data_generator
 
-# Ddefine generative model
-def generator_model():
-    #kernel_init = RandomNormal(mean=0.0, stddev=0.01)
-    kernel_init = 'glorot_uniform'
-    
-    generator = Sequential()
-    generator.add(Dense(4*4*512, input_shape=(1, 1, 100), kernel_initializer=kernel_init))
-    generator.add(BatchNormalization(momentum=0.5))
-    generator.add(LeakyReLU(0.2))
-    generator.add(Reshape((4, 4, 512)))
-
-    generator.add(Conv2DTranspose(256, kernel_size=(4, 4), strides=(2, 2), padding='same', kernel_initializer=kernel_init))
-    generator.add(BatchNormalization(momentum=0.5))
-    generator.add(LeakyReLU(0.2))
-    
-    generator.add(Conv2DTranspose(128, kernel_size=(4, 4), strides=(2, 2), padding='same', kernel_initializer=kernel_init))
-    generator.add(BatchNormalization(momentum=0.5))
-    generator.add(LeakyReLU(0.2))
-    
-    generator.add(Conv2DTranspose(64, kernel_size=(4, 4), strides=(2, 2), padding='same', kernel_initializer=kernel_init))
-    generator.add(BatchNormalization(momentum=0.5))
-    generator.add(LeakyReLU(0.2))
-   
-    generator.add(Conv2DTranspose(3, kernel_size=(4, 4), strides=(2, 2), padding='same', kernel_initializer=kernel_init))
-    generator.add(Activation('tanh'))
-
-    optimizer = Adam(lr=0.00015, beta_1=0.5)
-    generator.compile(loss='binary_crossentropy', optimizer=optimizer, metrics=None)
-
-    return generator
-
 # Define discriminative model
 def discriminator_model():
     #kernel_init = RandomNormal(mean=0.0, stddev=0.01)
     kernel_init = 'glorot_uniform'   
     
     discriminator = Sequential()
-    discriminator.add(Conv2D(64, kernel_size=(4, 4), padding='same', strides = (2,2),
-        input_shape=(64, 64, 3), kernel_initializer=kernel_init))
+    discriminator.add(Conv2D(64, kernel_size=(5, 5), padding='same', strides = (2,2),
+        input_shape=(64, 64, 1), kernel_initializer=kernel_init))
     discriminator.add(LeakyReLU(0.2))
     
-    discriminator.add(Conv2D(128, kernel_size=(4, 4), padding='same', strides=(2,2), kernel_initializer=kernel_init))
+    discriminator.add(Conv2D(128, kernel_size=(5, 5), padding='same', strides=(2,2), kernel_initializer=kernel_init))
     discriminator.add(BatchNormalization(momentum=0.5))
     discriminator.add(LeakyReLU(0.2))
     
-    discriminator.add(Conv2D(256, kernel_size=(4, 4), padding='same', strides=(2,2), kernel_initializer=kernel_init))
+    discriminator.add(Conv2D(256, kernel_size=(5, 5), padding='same', strides=(2,2), kernel_initializer=kernel_init))
     discriminator.add(BatchNormalization(momentum=0.5))
     discriminator.add(LeakyReLU(0.2))
 
-    discriminator.add(Conv2D(512, kernel_size=(4, 4), padding='same', strides=(2,2), kernel_initializer=kernel_init))
+    discriminator.add(Conv2D(512, kernel_size=(5, 5), padding='same', strides=(2,2), kernel_initializer=kernel_init))
     discriminator.add(BatchNormalization(momentum=0.5))
     discriminator.add(LeakyReLU(0.2))
 
@@ -87,6 +56,38 @@ def discriminator_model():
     discriminator.compile(loss='binary_crossentropy', optimizer=optimizer, metrics=None)
 
     return discriminator
+
+
+# Ddefine generative model
+def generator_model():
+    #kernel_init = RandomNormal(mean=0.0, stddev=0.01)
+    kernel_init = 'glorot_uniform'
+    
+    generator = Sequential()
+    generator.add(Dense(4*4*512, input_shape=(1, 1, 100), kernel_initializer=kernel_init))
+    generator.add(Reshape((4, 4, 512)))
+    generator.add(BatchNormalization(momentum=0.5))
+    generator.add(Activation('relu'))
+
+    generator.add(Conv2DTranspose(256, kernel_size=(4, 4), strides=(2, 2), padding='same', kernel_initializer=kernel_init))
+    generator.add(BatchNormalization(momentum=0.5))
+    generator.add(Activation('relu'))
+    
+    generator.add(Conv2DTranspose(128, kernel_size=(4, 4), strides=(2, 2), padding='same', kernel_initializer=kernel_init))
+    generator.add(BatchNormalization(momentum=0.5))
+    generator.add(Activation('relu'))
+    
+    generator.add(Conv2DTranspose(64, kernel_size=(4, 4), strides=(2, 2), padding='same', kernel_initializer=kernel_init))
+    generator.add(BatchNormalization(momentum=0.5))
+    generator.add(Activation('relu'))
+   
+    generator.add(Conv2DTranspose(1, kernel_size=(4, 4), strides=(2, 2), padding='same', kernel_initializer=kernel_init))
+    generator.add(Activation('tanh'))
+
+    optimizer = Adam(lr=0.00015, beta_1=0.5)
+    generator.compile(loss='binary_crossentropy', optimizer=optimizer, metrics=None)
+
+    return generator
 
 
 # Training
@@ -102,9 +103,9 @@ def train(dataset_path, batch_size, epochs):
     gan.add(discriminator)
     optimizer = Adam(lr=0.00015, beta_1=0.5)
     gan.compile(loss='binary_crossentropy', optimizer=optimizer, metrics=None)
-    #discriminator.summary()
-    #generator.summary()
-    #gan.summary()
+    discriminator.summary()
+    generator.summary()
+    gan.summary()
 
     # Load dataset
     dataset_generator = load_dataset(dataset_path, batch_size)
@@ -163,7 +164,7 @@ def train(dataset_path, batch_size, epochs):
         # Save the model weights and generated images each 10 epochs 
         if (epoch + 1) % 10 == 0:
             discriminator.trainable = True
-            generator.save('./models/generator_epoch' + str(epoch) + '.hdf5')
+            generator.save('./models/generator_epoch' + str(epoch + 1) + '.hdf5')
             discriminator.save('./models/discriminator_epoch' + str(epoch + 1) + '.hdf5')      
 
   
