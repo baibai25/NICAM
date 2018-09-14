@@ -10,9 +10,12 @@ def save_generated_images(generated_images):
 
     for i in range(len(generated_images)):
         image = generated_images[i, :, :, :]
-        image += 1
-        image *= 127.5
-        image.astype(np.uint8)
+        #image += 1
+        #image *= 127.5
+        #image.astype(np.uint8)
+        min = image.min()
+        max = image.max()
+        image = (image - min) / (max - min)
         name = './generated/{}.tif'.format(str(i))
         tifffile.imsave(name, image)
 
@@ -31,11 +34,10 @@ def test(model_path, generate_size):
 
   
 def main():
-    model_path = './models/generator_epoch99.hdf5'
-    generate_size = 128
+    model_path = './models/generator_epoch3.hdf5'
+    generate_size = 64
     test(model_path, generate_size)
 
 
 if __name__ == "__main__":
-    args = sys.args
     main()

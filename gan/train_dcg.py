@@ -25,10 +25,8 @@ def load_dataset(dataset_path, batch_size):
     )
 
     return data_generator
-"""
-+ change activation to relu
-+ fix: generated white images
-"""
+
+
 # Define discriminative model
 def discriminator_model():
     #kernel_init = RandomNormal(mean=0.0, stddev=0.01)
@@ -70,23 +68,23 @@ def generator_model():
     generator.add(Dense(4*4*512, input_shape=(1, 1, 100), kernel_initializer=kernel_init))
     generator.add(Reshape((4, 4, 512)))
     generator.add(BatchNormalization(momentum=0.5))
-    #generator.add(Activation('relu'))
-    generator.add(LeakyReLU(0.2))
+    generator.add(Activation('relu'))
+    #generator.add(LeakyReLU(0.2))
 
     generator.add(Conv2DTranspose(256, kernel_size=(5, 5), strides=(2, 2), padding='same', kernel_initializer=kernel_init))
     generator.add(BatchNormalization(momentum=0.5))
-    #generator.add(Activation('relu'))
-    generator.add(LeakyReLU(0.2))
+    generator.add(Activation('relu'))
+    #generator.add(LeakyReLU(0.2))
     
     generator.add(Conv2DTranspose(128, kernel_size=(5, 5), strides=(2, 2), padding='same', kernel_initializer=kernel_init))
     generator.add(BatchNormalization(momentum=0.5))
-    #generator.add(Activation('relu'))
-    generator.add(LeakyReLU(0.2))
+    generator.add(Activation('relu'))
+    #generator.add(LeakyReLU(0.2))
     
     generator.add(Conv2DTranspose(64, kernel_size=(5, 5), strides=(2, 2), padding='same', kernel_initializer=kernel_init))
     generator.add(BatchNormalization(momentum=0.5))
-    #generator.add(Activation('relu'))
-    generator.add(LeakyReLU(0.2))
+    generator.add(Activation('relu'))
+    #generator.add(LeakyReLU(0.2))
    
     generator.add(Conv2DTranspose(1, kernel_size=(5, 5), strides=(2, 2), padding='same', kernel_initializer=kernel_init))
     generator.add(Activation('tanh'))
@@ -133,8 +131,8 @@ def train(dataset_path, batch_size, epochs):
         for batch_number in range(number_of_batches):
             # Rescale images between -1 and 1
             real_images = dataset_generator.next()
-            real_images /= 127.5
-            real_images -= 1
+            #real_images /= 127.5
+            #real_images -= 1
 
             current_batch_size = real_images.shape[0]
 
@@ -166,15 +164,28 @@ def train(dataset_path, batch_size, epochs):
             batches = np.append(batches, current_batch)
 
             current_batch += 1
-            print('Epoch: {}, Step: {}/{}'.format(epoch+1, batch_number, number_of_batches))
+            print('Epoch: {}, Step: {}/{}'.format(epoch+1, batch_number+1, number_of_batches))
  
         # Save the model weights and generated images each 10 epochs 
         if (epoch + 1) % 10 == 0:
             discriminator.trainable = True
             generator.save('./models/generator_epoch' + str(epoch + 1) + '.hdf5')
-            #discriminator.save('./models/discriminator_epoch' + str(epoch + 1) + '.hdf5')
+            discriminator.save('./models/discriminator_epoch' + str(epoch + 1) + '.hdf5')
+        #generator.save('./models/generator_epoch' + str(epoch + 1) + '.hdf5')
 
-        generator.save('./models/generator_epoch' + str(epoch + 1) + '.hdf5')
+        # Each epoch update the loss graphs
+        plt.figure(1)
+        plt.plot(batches, adversarial_loss, color='green', label='Generator Loss')
+        plt.plot(batches, discriminator_loss, color='blue', label='Discriminator Loss')
+        plt.title("DCGAN Train")
+        plt.xlabel("Batch Iteration")
+        plt.ylabel("Loss")
+        if epoch == 0:
+            plt.legend()
+        #plt.pause(0.0000000001)
+        #plt.show()
+        plt.savefig('trainingLossPlot.png')
+
   
 def main():
     dataset_path = './data'
