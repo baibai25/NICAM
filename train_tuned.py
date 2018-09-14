@@ -25,8 +25,7 @@ def swish(x):
 # Build network
 def build_model():
     # frames.shape = (frames width, hight, channels)
-
-    resnet = VGG16(include_top=False, input_shape=(64, 64, 3), weights='imagenet')
+    resnet = ResNet50(include_top=False, input_shape=(64, 64, 1), weights='imagenet')
     input_tensor = Input(shape=resnet.output_shape[1:])
     
     top_model = Sequential()
@@ -37,10 +36,11 @@ def build_model():
     
     model = Model(input=resnet.input, output=top_model(resnet.output))
     
-    for layer in model.layers[:15]:
-        layer.trainable = False        
-
+    #for layer in model.layers[:15]:
+        #layer.trainable = False        
+    
     return model
+
 
 if __name__ == "__main__":
     # build network
@@ -54,12 +54,14 @@ if __name__ == "__main__":
     cp_path = './tmp/{epoch:02d}-{val_loss:.2f}.hdf5' 
     cp_cb = ModelCheckpoint(filepath=cp_path, verbose=1)
     #model.summary()
-
+    
+    # Define generator
     train_datagen = ImageDataGenerator(rescale=1./255, validation_split=0.2)
     
     train_generator = train_datagen.flow_from_directory(
         './data/train',
         target_size=(64, 64),
+        color_mode='grayscale',
         batch_size=batch_size,
         shuffle=True,
         seed=42,
@@ -71,6 +73,7 @@ if __name__ == "__main__":
     validation_generator = train_datagen.flow_from_directory(
         './data/train',
         target_size=(64, 64),
+        color_mode='grayscale',
         batch_size=batch_size,
         shuffle=True,
         seed=42,
@@ -79,8 +82,7 @@ if __name__ == "__main__":
         subset='validation'
     )
     
-    print(train_generator.class_indices)
-  
+    # Learning
     model.fit_generator(
         train_generator,
         epochs=epochs,
@@ -91,3 +93,4 @@ if __name__ == "__main__":
 
     # export model
     model.save('my_model.h5')
+
