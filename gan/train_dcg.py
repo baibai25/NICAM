@@ -25,7 +25,10 @@ def load_dataset(dataset_path, batch_size):
     )
 
     return data_generator
-
+"""
++ change activation to relu
++ fix: generated white images
+"""
 # Define discriminative model
 def discriminator_model():
     #kernel_init = RandomNormal(mean=0.0, stddev=0.01)
@@ -67,21 +70,25 @@ def generator_model():
     generator.add(Dense(4*4*512, input_shape=(1, 1, 100), kernel_initializer=kernel_init))
     generator.add(Reshape((4, 4, 512)))
     generator.add(BatchNormalization(momentum=0.5))
-    generator.add(Activation('relu'))
+    #generator.add(Activation('relu'))
+    generator.add(LeakyReLU(0.2))
 
-    generator.add(Conv2DTranspose(256, kernel_size=(4, 4), strides=(2, 2), padding='same', kernel_initializer=kernel_init))
+    generator.add(Conv2DTranspose(256, kernel_size=(5, 5), strides=(2, 2), padding='same', kernel_initializer=kernel_init))
     generator.add(BatchNormalization(momentum=0.5))
-    generator.add(Activation('relu'))
+    #generator.add(Activation('relu'))
+    generator.add(LeakyReLU(0.2))
     
-    generator.add(Conv2DTranspose(128, kernel_size=(4, 4), strides=(2, 2), padding='same', kernel_initializer=kernel_init))
+    generator.add(Conv2DTranspose(128, kernel_size=(5, 5), strides=(2, 2), padding='same', kernel_initializer=kernel_init))
     generator.add(BatchNormalization(momentum=0.5))
-    generator.add(Activation('relu'))
+    #generator.add(Activation('relu'))
+    generator.add(LeakyReLU(0.2))
     
-    generator.add(Conv2DTranspose(64, kernel_size=(4, 4), strides=(2, 2), padding='same', kernel_initializer=kernel_init))
+    generator.add(Conv2DTranspose(64, kernel_size=(5, 5), strides=(2, 2), padding='same', kernel_initializer=kernel_init))
     generator.add(BatchNormalization(momentum=0.5))
-    generator.add(Activation('relu'))
+    #generator.add(Activation('relu'))
+    generator.add(LeakyReLU(0.2))
    
-    generator.add(Conv2DTranspose(1, kernel_size=(4, 4), strides=(2, 2), padding='same', kernel_initializer=kernel_init))
+    generator.add(Conv2DTranspose(1, kernel_size=(5, 5), strides=(2, 2), padding='same', kernel_initializer=kernel_init))
     generator.add(Activation('tanh'))
 
     optimizer = Adam(lr=0.00015, beta_1=0.5)
@@ -165,8 +172,9 @@ def train(dataset_path, batch_size, epochs):
         if (epoch + 1) % 10 == 0:
             discriminator.trainable = True
             generator.save('./models/generator_epoch' + str(epoch + 1) + '.hdf5')
-            discriminator.save('./models/discriminator_epoch' + str(epoch + 1) + '.hdf5')      
+            #discriminator.save('./models/discriminator_epoch' + str(epoch + 1) + '.hdf5')
 
+        generator.save('./models/generator_epoch' + str(epoch + 1) + '.hdf5')
   
 def main():
     dataset_path = './data'
